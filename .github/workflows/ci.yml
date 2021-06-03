@@ -1,0 +1,90 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  determine-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.semantic.outputs.new_release_version }}
+    steps:
+      - name: Cancel previous workflows
+        uses: styfle/cancel-workflow-action@0.9.0
+        with:
+          access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/checkout@v2
+
+      - name: Determine next version
+        uses: cycjimmy/semantic-release-action@v2
+        id: semantic
+        with:
+          extra_plugins: |
+            @semantic-release/changelog
+            @semantic-release/git
+            conventional-changelog-conventionalcommits
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  push-docker-image:
+    runs-on: ubuntu-latest
+    needs: determine-version
+    if: ${{ needs.determine-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        id: push-image
+        with:
+          context: ./app
+          file: ./app/Dockerfile
+          push: true
+          tags: |
+            iamskok/express-echo-hostname:latest
+            iamskok/express-echo-hostname:${{ needs.determine-version.outputs.version }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: push-docker-image
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Create `.env` file
+        uses: SpicyPizza/create-envfile@v1.1
+        with:
+          envkey_DOMAIN: ${{ secrets.DOMAIN }}
+          envkey_EMAIL: ${{ secrets.EMAIL }}
+          directory: ${{ github.workspace }}
+          file_name: .env
+
+      - name: Copy files to remote host
+        uses: appleboy/scp-action@v0.1.1
+        with:
+          host: ${{ secrets.REMOTE_IP }}
+          username: ${{ secrets.REMOTE_USERNAME }}
+          key: ${{ secrets.REMOTE_SSH_PRIVATE_KEY }}
+          source: .env,docker-compose.yml
+          target: /root
+
+      - name: Start Docker containers on remote host
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.REMOTE_IP }}
+          username: ${{ secrets.REMOTE_USERNAME }}
+          key: ${{ secrets.REMOTE_SSH_PRIVATE_KEY }}
+          script: |
+            docker-compose --file /root/docker-compose.yml \
+              --env-file /root/.env pull
+            docker-compose --file /root/docker-compose.yml \
+              --env-file /root/.env up --detach
+            docker image prune --force

@@ -1,0 +1,11 @@
+{
+  "name": "express-echo-hostname",
+  "version": "0.0.0",
+  "type": "module",
+  "dependencies": {
+    "express": "4.17.1"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}

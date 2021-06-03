@@ -1,0 +1,85 @@
+version: '3.8'
+
+networks:
+  proxy:
+
+x-app: &app
+  image: iamskok/express-echo-hostname:latest
+  restart: unless-stopped
+  networks:
+    - proxy
+
+x-app-depends-on: &app-depends-on
+  nginx-proxy:
+    condition: service_started
+  acme-companion:
+    condition: service_started
+
+x-app-environment: &app-environment
+  VIRTUAL_HOST: '${DOMAIN}'
+  LETSENCRYPT_HOST: '${DOMAIN}'
+  LETSENCRYPT_EMAIL: '${EMAIL}'
+
+services:
+
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy:0.9.0
+    container_name: nginx-proxy
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /root/data/conf:/etc/nginx/conf.d
+      - /root/data/vhost:/etc/nginx/vhost.d
+      - /root/data/html:/usr/share/nginx/html
+      - /root/data/dhparam:/etc/nginx/dhparam
+      - /root/data/certs:/etc/nginx/certs:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    restart: unless-stopped
+    networks:
+      - proxy
+
+  acme-companion:
+    image: nginxproxy/acme-companion:2.1.0
+    container_name: acme-companion
+    depends_on:
+      - nginx-proxy
+    volumes:
+      - /root/data/acme:/etc/acme.sh
+      - /root/data/vhost:/etc/nginx/vhost.d
+      - /root/data/html:/usr/share/nginx/html
+      - /root/data/dhparam:/etc/nginx/dhparam:ro
+      - /root/data/certs:/etc/nginx/certs
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      NGINX_PROXY_CONTAINER: nginx-proxy
+      DEFAULT_EMAIL: ${EMAIL}
+    restart: unless-stopped
+    networks:
+      - proxy
+
+  app-1:
+    <<: *app
+    container_name: app-1
+    expose:
+      - 3001
+    depends_on:
+      <<: *app-depends-on
+    environment:
+      <<: *app-environment
+      PORT: 3001
+      VIRTUAL_PORT: 3001
+
+  app-2:
+    <<: *app
+    container_name: app-2
+    depends_on:
+      <<: *app-depends-on
+      app-1:
+        condition: service_healthy
+    expose:
+      - 3002
+    environment:
+      <<: *app-environment
+      PORT: 3002
+      VIRTUAL_PORT: 3002
