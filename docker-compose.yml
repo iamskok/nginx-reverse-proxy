@@ -23,7 +23,7 @@ x-app-environment: &app-environment
 services:
 
   nginx-proxy:
-    image: nginxproxy/nginx-proxy:0.9.2
+    image: nginxproxy/nginx-proxy:0.9.3
     container_name: nginx-proxy
     ports:
       - 80:80
