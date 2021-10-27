@@ -1,3 +1,5 @@
+### [1.0.6](https://github.com/iamskok/nginx-reverse-proxy/compare/v1.0.5...v1.0.6) (2021-10-27)
+
 ### [1.0.5](https://github.com/iamskok/nginx-reverse-proxy/compare/v1.0.4...v1.0.5) (2021-10-26)
 
 ### [1.0.4](https://github.com/iamskok/nginx-reverse-proxy/compare/v1.0.3...v1.0.4) (2021-09-16)
