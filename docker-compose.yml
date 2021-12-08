@@ -40,7 +40,7 @@ services:
       - proxy
 
   acme-companion:
-    image: nginxproxy/acme-companion:2.1.0
+    image: nginxproxy/acme-companion:2.1.1
     container_name: acme-companion
     depends_on:
       - nginx-proxy
