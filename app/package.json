@@ -3,7 +3,7 @@
   "version": "1.0.8",
   "type": "module",
   "dependencies": {
-    "express": "4.17.1"
+    "express": "4.17.2"
   },
   "scripts": {
     "start": "node index.js"
