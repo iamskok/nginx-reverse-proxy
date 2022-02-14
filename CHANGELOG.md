@@ -1,3 +1,10 @@
+### [1.0.9](https://github.com/iamskok/nginx-reverse-proxy/compare/v1.0.8...v1.0.9) (2022-02-14)
+
+
+### Bug Fixes
+
+* **deps:** update dependency express to v4.17.2 ([0042de3](https://github.com/iamskok/nginx-reverse-proxy/commit/0042de34cb0cf827374556065ab44d6e4276c463))
+
 ### [1.0.8](https://github.com/iamskok/nginx-reverse-proxy/compare/v1.0.7...v1.0.8) (2021-12-09)
 
 ### [1.0.7](https://github.com/iamskok/nginx-reverse-proxy/compare/v1.0.6...v1.0.7) (2021-10-28)
