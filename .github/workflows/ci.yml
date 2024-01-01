@@ -68,7 +68,7 @@ jobs:
           file_name: .env
 
       - name: Copy files to remote host
-        uses: appleboy/scp-action@v0.1.2
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.REMOTE_IP }}
           username: ${{ secrets.REMOTE_USERNAME }}
