@@ -77,7 +77,7 @@ jobs:
           target: /root
 
       - name: Start Docker containers on remote host
-        uses: appleboy/ssh-action@v0.1.4
+        uses: appleboy/ssh-action@v1.1.0
         with:
           host: ${{ secrets.REMOTE_IP }}
           username: ${{ secrets.REMOTE_USERNAME }}
